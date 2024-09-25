@@ -6,3 +6,5 @@ This is a readme file.
 
 [![Releases](https://img.shields.io/github/release/linphone-40685558/sem/all.svg?style=flat-square)](https://github.com/linphone-40685558/sem/releases)
 
+# Software Engineering Methods
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/linphone-40685558/sem/A workflow for my Hello World App/develop?style=flat-square)
