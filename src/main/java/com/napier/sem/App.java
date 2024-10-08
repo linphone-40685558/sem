@@ -26,9 +26,10 @@ public class App {
             System.out.println("Connecting to database...");
             try {
                 // Wait a bit for db to start
-                Thread.sleep(30000);
+                Thread.sleep(3000);
                 // Connect to database
-                con = DriverManager.getConnection("jdbc:mysql://db:3306/employees?allowPublicKeyRetrieval=true&useSSL=false", "root", "example");
+//                con = DriverManager.getConnection("jdbc:mysql://db:3306/employees?allowPublicKeyRetrieval=true&useSSL=false", "root", "example");
+                con = DriverManager.getConnection("jdbc:mysql://localhost:33060/employees", "root", "example");
                 System.out.println("Successfully connected");
                 break;
             } catch (SQLException sqle) {
@@ -165,8 +166,75 @@ public class App {
         }
     }
 
+    /**
+     * Get salaries by department
+     *
+     * @param dept
+     * @return
+     */
     public ArrayList<Employee> getSalariesByDepartment(Department dept) {
-        return null;
+        try {
+            // Create an SQL statement
+            Statement stmt = con.createStatement();
+            // Create string for SQL statement with department number as a string (quoted)
+            String strSelect = "SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary " +
+                    "FROM employees, salaries, dept_emp, departments " +
+                    "WHERE employees.emp_no = salaries.emp_no " +
+                    "AND employees.emp_no = dept_emp.emp_no " +
+                    "AND dept_emp.dept_no = departments.dept_no " +
+                    "AND salaries.to_date = '9999-01-01' " +
+                    "AND departments.dept_no = '" + dept.getDept_no() + "' " +  // Dept no is treated as string
+                    "ORDER BY employees.emp_no ASC";
+
+            // Execute SQL statement
+            ResultSet rset = stmt.executeQuery(strSelect);
+            // Extract employee information
+            ArrayList<Employee> employees = new ArrayList<>();
+            while (rset.next()) {
+                Employee emp = new Employee();
+                emp.emp_no = rset.getInt("emp_no");
+                emp.first_name = rset.getString("first_name");
+                emp.last_name = rset.getString("last_name");
+                emp.salary = rset.getInt("salary");
+                employees.add(emp);
+            }
+            return employees;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to get salary details");
+            return null;
+        }
+    }
+
+    /**
+     * Get department
+     *
+     * @param dept_name
+     * @return
+     */
+    public Department getDepartment(String dept_name) {
+        try {
+            // Prepare SQL statement to prevent SQL injection
+            String strSelect = "SELECT dept_no, dept_name FROM departments WHERE dept_name = ?";
+            PreparedStatement pstmt = con.prepareStatement(strSelect);
+            pstmt.setString(1, dept_name);
+            ResultSet rset = pstmt.executeQuery();
+
+            // Check if department exists
+            if (rset.next()) {
+                // Here, we fetch department number as a string (like "d005")
+                String dept_no = rset.getString("dept_no");
+                // Assume that fetching the manager is handled separately
+                Employee manager = null;  // Placeholder for manager if needed
+                return new Department(rset.getString("dept_name"), dept_no, manager);
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to get department details");
+            return null;
+        }
     }
 
     /**
@@ -175,24 +243,20 @@ public class App {
      * @param args
      */
     public static void main(String[] args) {
-        // Create new Application
+        // Create new Application and connect to database
         App a = new App();
 
-        // Connect to database
         a.connect();
 
-        // Extract employee salary information
-        ArrayList<Employee> employees = a.getAllSalaries();
+        Department dept = a.getDepartment("Development");
+        ArrayList<Employee> employees = a.getSalariesByDepartment(dept);
 
-        // Test the size of the returned data - should be 240124
-        System.out.println(employees.size());
+        System.out.println("Department:" + dept);
+        // Print salary report
+        a.printSalaries(employees);
 
         // Disconnect from database
         a.disconnect();
     }
-
-    public void method() {
-    }
-
 
 }
