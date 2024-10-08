@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - develop
       - lab08
 jobs:
   UnitTests:
@@ -45,7 +46,7 @@ jobs:
       - name: CodeCov
         uses: codecov/codecov-action@v2
         with:
-          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./target/site/jacoco
           flags: Integration Tests # optional
           verbose: true # optional (default = false)
