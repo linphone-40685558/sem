@@ -1,5 +1,9 @@
 package com.napier.sem;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -261,6 +265,40 @@ public class App {
     }
 
     /**
+     * Outputs to Markdown
+     *
+     * @param employees
+     */
+    public void outputEmployees(ArrayList<Employee> employees, String filename) {
+        // Check employees is not null
+        if (employees == null) {
+            System.out.println("No employees");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        // Print header
+        sb.append("| Emp No | First Name | Last Name | Title | Salary | Department |Manager |\r\n");
+        sb.append("| --- | --- | --- | --- | --- | --- | --- |\r\n");
+        // Loop over all employees in the list
+        for (Employee emp : employees) {
+            if (emp == null) continue;
+            sb.append("| " + emp.emp_no + " | " +
+                    emp.first_name + " | " + emp.last_name + " | " +
+                    emp.title + " | " + emp.salary + " | "
+                    + emp.dept_name + " | " + emp.manager + " |\r\n");
+        }
+        try {
+            new File("./reports/").mkdir();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File("./reports/" + filename)));
+            writer.write(sb.toString());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Main method
      *
      * @param args
@@ -275,12 +313,15 @@ public class App {
             a.connect(args[0], Integer.parseInt(args[1]));
         }
 
+        // Get department
         Department dept = a.getDepartment("Development");
-        ArrayList<Employee> employees = a.getSalariesByDepartment(dept);
 
+        // Get employees of 'development' department
+        ArrayList<Employee> employees = a.getSalariesByDepartment(dept);
 
         // Print salary report
         a.printSalaries(employees);
+        a.outputEmployees(employees, "DevelopmentSalaries.md");
 
         // Disconnect from database
         a.disconnect();
