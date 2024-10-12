@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
       - name: Set up JDK 17
@@ -69,9 +69,7 @@ jobs:
           docker compose up --abort-on-container-exit
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          permissions:
-            contents: write
+          repo_token: "${{ secrets.PAT_TOKEN }}"
           prerelease: false
           automatic_release_tag: "latest"
           files: |
